@@ -163,7 +163,7 @@ public class StringUtils {
     * StringUtils.equals("abc", "ABC") = false
     * </pre>
     *
-    * @see java.lang.String#equals(Object)
+    * @see String#equals(Object)
     * @param cs1  the first CharSequence, may be null
     * @param cs2  the second CharSequence, may be null
     * @return {@code true} if the CharSequences are equal, case sensitive, or
@@ -173,9 +173,5 @@ public class StringUtils {
    public static boolean equals(CharSequence cs1, CharSequence cs2) {
        return cs1 == null ? cs2 == null : cs1.equals(cs2);
    }
-
-    public static boolean equals(CharSequence cs1, Null cs2) {
-        return cs1 ==null  || cs1.equals("");
-    }
 
 }

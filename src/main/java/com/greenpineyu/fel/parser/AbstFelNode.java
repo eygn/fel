@@ -4,6 +4,7 @@ import com.greenpineyu.fel.common.Callable;
 import com.greenpineyu.fel.compile.SourceBuilder;
 import com.greenpineyu.fel.context.FelContext;
 import com.greenpineyu.fel.interpreter.Interpreter;
+import com.greenpineyu.fel.util.FelSwitcher;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -30,7 +31,7 @@ public abstract class AbstFelNode extends CommonTree implements FelNode, Interpr
 	 */
 	protected Interpreter defaultInter;
 
-
+	
 	protected SourceBuilder builder;
 
 	@Override
@@ -43,8 +44,8 @@ public abstract class AbstFelNode extends CommonTree implements FelNode, Interpr
 			return new ArrayList<>(0);
 		}
 		return this.children.stream()
-				.map(item -> (FelNode)item)
-				.collect(toList());
+			.map(item -> (FelNode)item)
+			.collect(toList());
 	}
 
 	public AbstFelNode(Token token) {
@@ -118,7 +119,7 @@ public abstract class AbstFelNode extends CommonTree implements FelNode, Interpr
 		getNodes(node, returnMe,null);
 		return returnMe;
 	}
-
+	
 	public static List<FelNode> getNodes(FelNode node,Callable<Boolean, FelNode> filter) {
 		List<FelNode> returnMe = new ArrayList<>();
 		getNodes(node, returnMe, filter);
@@ -139,7 +140,9 @@ public abstract class AbstFelNode extends CommonTree implements FelNode, Interpr
 						FelNode child = iterator.next();
 						getNodes(child, returnMe, filter);
 					} catch (Exception e) {
-						log.error("getNodes error", e);
+						if (FelSwitcher.errorLog) {
+							log.error("getNodes error", e);
+						}
 					}
 				}
 			}
@@ -164,31 +167,31 @@ public abstract class AbstFelNode extends CommonTree implements FelNode, Interpr
 
 	/**
 	 * 是否默认的解释器
-	 *
+	 * 
 	 * @return
 	 */
 	@Override
 	public boolean isDefaultInterpreter(){
 		return this.interpreter == this.defaultInter;
 	}
-
-
+	
+	
 
 	@Override
 	public Object interpret(FelContext context, FelNode node) {
 		throw new UnsupportedOperationException("还没有实现[2011-1-13]");
 	}
-
+	
 	@Override
 	public SourceBuilder toMethod(FelContext ctx){
 		return this.builder;
 	}
-
+	
 	@Override
 	public void setSourcebuilder(SourceBuilder builder) {
 		this.builder = builder;
 	}
-
+	
 	@Override
 	public boolean stable() {
 		return false;
@@ -206,6 +209,11 @@ public abstract class AbstFelNode extends CommonTree implements FelNode, Interpr
 		}
 		return true;
 	}
-
+	
+	
+//	public void resetSourceBuilder(){
+//		this.builder = this;
+//	}
+	
 
 }

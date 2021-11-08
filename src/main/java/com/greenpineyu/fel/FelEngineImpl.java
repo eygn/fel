@@ -1,8 +1,10 @@
 package com.greenpineyu.fel;
 
+import com.greenpineyu.fel.common.FelBuilder;
 import com.greenpineyu.fel.compile.CompileService;
+import com.greenpineyu.fel.compile.FelClassLoader;
+import com.greenpineyu.fel.context.ArrayCtxImpl;
 import com.greenpineyu.fel.context.FelContext;
-import com.greenpineyu.fel.context.MapContext;
 import com.greenpineyu.fel.context.Var;
 import com.greenpineyu.fel.function.FunMgr;
 import com.greenpineyu.fel.function.Function;
@@ -11,6 +13,13 @@ import com.greenpineyu.fel.optimizer.VarVisitOpti;
 import com.greenpineyu.fel.parser.AntlrParser;
 import com.greenpineyu.fel.parser.FelNode;
 import com.greenpineyu.fel.parser.Parser;
+import com.greenpineyu.fel.security.SecurityMgr;
+import com.greenpineyu.fel.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 执行引擎
@@ -19,6 +28,7 @@ import com.greenpineyu.fel.parser.Parser;
  * 
  */
 public class FelEngineImpl implements FelEngine {
+	Logger logger= LoggerFactory.getLogger(FelEngineImpl.class);
 
 	private FelContext context;
 
@@ -28,20 +38,34 @@ public class FelEngineImpl implements FelEngine {
 	
 	private FunMgr funMgr;
 	
+	private SecurityMgr securityMgr;
 
+	public SecurityMgr getSecurityMgr() {
+		return securityMgr;
+	}
+
+	public void setSecurityMgr(SecurityMgr securityMgr) {
+		this.securityMgr = securityMgr;
+	}
 
 	public FelEngineImpl(FelContext context) {
 		this.context = context;
 		compiler = new CompileService();
 		parser = new AntlrParser(this);
 		this.funMgr=new FunMgr();
-		
 	}
-	
+
+	{
+		this.securityMgr = FelBuilder.newSecurityMgr();
+	}
 
 	public FelEngineImpl() {
-		// this(new ArrayCtxImpl());
-		this(new MapContext());
+		this(new ArrayCtxImpl());
+		// this(new MapContext());
+	}
+
+	public void setFelclassesPath(String felclassesPath) {
+		FelClassLoader.felclassesPath = felclassesPath;
 	}
 
 	@Override
@@ -84,6 +108,32 @@ public class FelEngineImpl implements FelEngine {
 			}
 		}
 		return compiler.compile(ctx, node, exp);
+	}
+
+	@Override
+	public Map<String, Expression> parallelCompile(Map<String, Pair<String, FelContext>> nodeOrigin, Optimizer... opts) {
+		Map<String,FelContext > fel=new HashMap<>();//context
+		Map<String,FelNode> felnode=new HashMap<>();//node
+		Map<String,String> origin=new HashMap<>();//biz
+		for (Map.Entry<String,Pair<String,FelContext>> entry:nodeOrigin.entrySet()){
+			if (entry.getValue().getRight() == null) {
+				entry.getValue().setRight(this.context);
+			}
+			FelNode node = parse(entry.getValue().getLeft());
+			if (opts != null) {
+				for (Optimizer opt : opts) {
+					if (opt != null) {
+						node = opt.call(entry.getValue().getRight(), node);
+					}
+				}
+			}
+			felnode.put(entry.getKey(),node);
+			origin.put(entry.getKey(),entry.getValue().getLeft());
+			fel.put(entry.getKey(),entry.getValue().getRight());
+			logger.warn("[FEL] fel put {} to compile,value is {}",entry.getKey(),entry.getValue());
+		}
+		Map<String, Expression> result = compiler.paralleCompiler(fel, felnode, origin);
+		return result;
 	}
 
 	@Override

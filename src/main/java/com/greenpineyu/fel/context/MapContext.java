@@ -19,7 +19,7 @@ public class MapContext extends HashMap<String, Var> implements FelContext {
 	public MapContext(Map<String,Object> map){
 //		this.putAll(map);
 		if(map != null){
-			for (Map.Entry<String, Object> e : map.entrySet()) {
+			for (Entry<String, Object> e : map.entrySet()) {
 				String name = e.getKey();
 				Object value = e.getValue();
 				this.set(name, value);

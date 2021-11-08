@@ -1,6 +1,7 @@
 package com.greenpineyu.fel.compile;
 
 import com.greenpineyu.fel.Expression;
+import com.greenpineyu.fel.util.FelSwitcher;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.PooledObject;
@@ -16,20 +17,23 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
-/**
- * @author byg
- * @date 2021-09-09 16:27:16
- */
 public class FelCompiler16<T> implements FelCompiler {
 
     private static final Logger log = LoggerFactory.getLogger(FelCompiler16.class);
+
+    //private final FelCompilerClassloader classLoader;
+    //
+    //private final JavaCompiler compiler;
+    //
+    //private DiagnosticCollector<JavaFileObject> diagnostics;
 
     private CustomJavaCompiler javaCompiler;
     private GenericObjectPool<CustomJavaCompiler> compilerPoll = new GenericObjectPool<>(new PooledObjectFactory<CustomJavaCompiler>() {
         @Override
         public PooledObject<CustomJavaCompiler> makeObject() throws Exception {
-            return new DefaultPooledObject<>(new CustomJavaCompilerImpl());
+            return new DefaultPooledObject<>(new JavaCompilerImpl());
         }
 
         @Override
@@ -54,13 +58,42 @@ public class FelCompiler16<T> implements FelCompiler {
     });
 
     public FelCompiler16() {
-        this.javaCompiler = new CustomJavaCompilerImpl();
+        //compiler = ToolProvider.getSystemJavaCompiler();
+        //
+        //if (compiler == null) {
+        //	throw new IllegalStateException(
+        //			"Cannot find the system Java compiler. "
+        //					+ "Check that your class path includes tools.jar");
+        //}
+        //
+        //this.classLoader = new FelCompilerClassloader(this.getClass()
+        //		.getClassLoader());
+        this.javaCompiler = new JavaCompilerImpl();
         compilerPoll.setConfig(new GenericObjectPoolConfig() {{
             setMaxTotal(8);
         }});
+
+        //diagnostics = new DiagnosticCollector<>();
+        //final StandardJavaFileManager fileManager = compiler
+        //		.getStandardFileManager(diagnostics, null, null);
+        //
+        //ClassLoader loader = this.classLoader.getParent();
+        //List<String> paths = CompileService.getClassPath(loader);
+        //List<File> cpFiles = new ArrayList<>();
+        //if (paths != null && (!paths.isEmpty())) {
+        //	for (String file : paths) {
+        //		cpFiles.add(new File(file));
+        //	}
+        //}
+        //try {
+        //	fileManager.setLocation(StandardLocation.CLASS_PATH, cpFiles);
+        //} catch (IOException e) {
+        //	e.printStackTrace();
+        //}
     }
 
     /**
+     *
      * @param src
      * @return
      */
@@ -71,14 +104,80 @@ public class FelCompiler16<T> implements FelCompiler {
             compile = compileToClass(src);
             return (Expression) compile.newInstance();
         } catch (InstantiationException e) {
-            log.error("compile error, JavaSource:" + src.getSource(), e);
+            if (FelSwitcher.errorLog) {
+                log.error("compile error, JavaSource:" + src.getSource(), e);
+            }
         } catch (IllegalAccessException e) {
-            log.error("compile error, JavaSource:" + src.getSource(), e);
+            if (FelSwitcher.errorLog) {
+                log.error("compile error, JavaSource:" + src.getSource(), e);
+            }
         } catch (Throwable e) {
-            log.error("compile error, JavaSource:" + src.getSource(), e);
+            if (FelSwitcher.errorLog) {
+                log.error("compile error, JavaSource:" + src.getSource(), e);
+            }
         }
         //diagnostics.getDiagnostics().clear();
         return null;
+    }
+
+
+    @Deprecated
+    @Override
+    public Map<String, Expression> parallelCompile(Map<String, JavaSource> srcMap) {
+        return null;
+//        Map<String, Expression> parallelMap = new ConcurrentHashMap<>();
+//        JavaSource type = srcMap.get("typemix");
+//        JavaSource typenormal = srcMap.get("typenormal");
+//        log.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>this typemix is {},typenormal is {},and input size is {}", type, typenormal, srcMap.size());
+//        srcMap.remove("typemix");
+//        srcMap.remove("typenormal");
+//        CountDownLatch countDownLatch = new CountDownLatch(1);
+//        List<ListenableFuture<Pair<String, Expression>>> futures = Lists.newArrayList();
+//        srcMap.forEach((k, v) -> {
+//            try {
+//                ListenableFuture<Pair<String, Expression>> invoke = service.submit(() -> {
+//                    //todo
+//                    return Pair.of(k, compile((v)));
+//                });
+//                futures.add(invoke);
+//
+//            } catch (Throwable e) {
+//                futures.add(null);
+//                if (FelSwitcher.errorLog) {
+//                    log.error("compile error, JavaSource:" + v.getSource(), e);
+//                }
+//            }
+//        });
+//        ListenableFuture<List<Pair<String, Expression>>> listListenableFuture = Futures.allAsList(Lists.newArrayList(futures));
+//        Futures.addCallback(listListenableFuture, new FutureCallback<List<Pair<String, Expression>>>() {
+//            @Override
+//            public void onSuccess(List<Pair<String, Expression>> result) {
+//                try {
+//                    for (Pair<String, Expression> stringExpressionPair : result) {
+//                        log.error(" compilerEnd {} type is  result is {}", stringExpressionPair.getLeft(), stringExpressionPair.getRight());
+//                        parallelMap.put(stringExpressionPair.getLeft(), stringExpressionPair.getRight());
+//                    }
+//                } catch (Throwable e) {
+//                    //ignore
+//                    log.error("error", e);
+//                } finally {
+//                    countDownLatch.countDown();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable t) {
+//                log.error("async compiler error", t);
+//                countDownLatch.countDown();
+//            }
+//        });
+//        try {
+//            countDownLatch.await();
+//        } catch (InterruptedException e) {
+//            //ignore
+//        }
+//        log.error("map size is {}>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>result is {}->", parallelMap.size(), parallelMap);
+//        return parallelMap;
     }
 
 
@@ -99,7 +198,8 @@ public class FelCompiler16<T> implements FelCompiler {
             javaCompiler.compile(javaSourceFile, "UTF-8", src.getName(), new File(dPath));
             File classFile = new File(dirFile, src.getName().replace('.', File.separatorChar) + ".class");
             res = FileUtils.readFileToByteArray(classFile);
-            Class<T> clazz = (Class<T>) FelClassLoader.getInstance().defineClassSelf(src.getName(), res, 0, res.length);
+            Class<T> clazz = (Class<T>) FelClassLoader.getInstance().defineClassSelf(src.getName(), res, 0,
+                    res.length);
             return clazz;
         } catch (Throwable e) {
             throw new RuntimeException(e.getMessage(), e);

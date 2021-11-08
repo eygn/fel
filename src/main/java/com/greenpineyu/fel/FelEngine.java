@@ -7,6 +7,10 @@ import com.greenpineyu.fel.function.Function;
 import com.greenpineyu.fel.optimizer.Optimizer;
 import com.greenpineyu.fel.parser.FelNode;
 import com.greenpineyu.fel.parser.Parser;
+import com.greenpineyu.fel.security.SecurityMgr;
+import com.greenpineyu.fel.util.Pair;
+
+import java.util.Map;
 
 /**
  * 表达式引擎
@@ -55,6 +59,17 @@ public interface FelEngine {
 	 */
 	Expression compile(String exp, FelContext ctx, Optimizer... opts);
 
+
+	/**
+	 * 编译表达式，编译优化
+	 *
+	 * @param exp
+	 * @param ctx
+	 * @param opts 编译优化选项
+	 * @return
+	 */
+	Map<String,Expression> parallelCompile(Map<String , Pair<String,FelContext>> map, Optimizer... opts);
+
 	/**
 	 * @return 引擎执行环境
 	 */
@@ -67,20 +82,18 @@ public interface FelEngine {
 	 * @return
 	 */
 	void addFun(Function fun);
-	
+
 	/**
 	 * 获取编译器
 	 * @return
 	 */
 	CompileService getCompiler() ;
 
-
 	/**
 	 * 设置编译器
 	 * @param compiler
 	 */
-	void setCompiler(CompileService compiler); 
-
+	void setCompiler(CompileService compiler);
 
 	/**
 	 * 获取解析器
@@ -88,13 +101,11 @@ public interface FelEngine {
 	 */
 	Parser getParser();
 
-
 	/**
 	 * 设置解析器
 	 * @param parser
 	 */
 	void setParser(Parser parser);
-
 
 	/**
 	 * 获取函数管理器
@@ -102,18 +113,30 @@ public interface FelEngine {
 	 */
 	FunMgr getFunMgr();
 
-
 	/**
 	 * 设置函数管理器
 	 * @param funMgr
 	 */
-	void setFunMgr(FunMgr funMgr); 
-
+	void setFunMgr(FunMgr funMgr);
 
 	/**
 	 * 设置Context
 	 * @param context
 	 */
 	void setContext(FelContext context);
+
+	/**
+	 * 返回安全管理器
+	 * @return
+	 */
+	SecurityMgr getSecurityMgr();
+
+	/**
+	 * 设置安全管理器
+	 * @param mgr
+	 */
+	void setSecurityMgr(SecurityMgr mgr);
+
+	void setFelclassesPath(String felclassesPath);
 
 }

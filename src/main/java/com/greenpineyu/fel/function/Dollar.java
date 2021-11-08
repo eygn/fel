@@ -6,6 +6,9 @@ import com.greenpineyu.fel.compile.FelMethod;
 import com.greenpineyu.fel.compile.SourceBuilder;
 import com.greenpineyu.fel.context.FelContext;
 import com.greenpineyu.fel.parser.FelNode;
+import com.greenpineyu.fel.util.FelSwitcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * $函数，通过$获取class或者创建对象 ${Math} 结果为 Math.class ${Dollar.new} 结果为 new Dollar()
@@ -15,6 +18,7 @@ import com.greenpineyu.fel.parser.FelNode;
  */
 public class Dollar implements Function {
 
+	private static final Logger log = LoggerFactory.getLogger(Dollar.class);
 
 	@Override
 	public String getName() {
@@ -28,21 +32,28 @@ public class Dollar implements Function {
 		boolean isNew = isNew(txt);
 		Class<?> cls = getClass(txt, isNew);
 		if (isNew) {
-			Object o = null;
-			if (cls != null) {
-				try {
-					o = cls.newInstance();
-				} catch (InstantiationException e) {
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
-			return o;
-
+			return newObject(cls);
 		} else {
 			return cls;
 		}
+	}
+
+	private Object newObject(Class<?> cls) {
+		Object o = null;
+		if (cls != null) {
+			try {
+				o = cls.newInstance();
+			} catch (InstantiationException e) {
+				if (FelSwitcher.errorLog) {
+					log.error("newObject error, cls:" + cls.getSimpleName(), e);
+				}
+			} catch (IllegalAccessException e) {
+				if (FelSwitcher.errorLog) {
+					log.error("newObject error, cls:" + cls.getSimpleName(), e);
+				}
+			}
+		}
+		return o;
 	}
 
 	private static final String suffix = ".new";
@@ -66,7 +77,9 @@ public class Dollar implements Function {
 			Class<?> clz = Class.forName(className);
 			return clz;
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			if (FelSwitcher.errorLog) {
+				log.error("getClass error, txt:" + txt, e);
+			}
 		}
 		return null;
 	}

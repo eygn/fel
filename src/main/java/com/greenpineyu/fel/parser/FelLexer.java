@@ -2,9 +2,6 @@
 package com.greenpineyu.fel.parser;
 
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class FelLexer extends Lexer {

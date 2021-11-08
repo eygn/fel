@@ -1,6 +1,14 @@
 package com.greenpineyu.fel.function.operator;
 
-import static com.greenpineyu.fel.common.NumberUtil.toDouble;
+import com.greenpineyu.fel.common.NumberUtil;
+import com.greenpineyu.fel.common.ObjectUtils;
+import com.greenpineyu.fel.common.ReflectUtil;
+import com.greenpineyu.fel.compile.FelMethod;
+import com.greenpineyu.fel.compile.SourceBuilder;
+import com.greenpineyu.fel.context.FelContext;
+import com.greenpineyu.fel.function.StableFunction;
+import com.greenpineyu.fel.function.TolerantFunction;
+import com.greenpineyu.fel.parser.FelNode;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -9,14 +17,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import com.greenpineyu.fel.common.NumberUtil;
-import com.greenpineyu.fel.common.ObjectUtils;
-import com.greenpineyu.fel.common.ReflectUtil;
-import com.greenpineyu.fel.compile.FelMethod;
-import com.greenpineyu.fel.compile.SourceBuilder;
-import com.greenpineyu.fel.context.FelContext;
-import com.greenpineyu.fel.function.StableFunction;
-import com.greenpineyu.fel.parser.FelNode;
+import static com.greenpineyu.fel.common.NumberUtil.toDouble;
 
 public class Add extends StableFunction  {
 
@@ -36,10 +37,7 @@ public class Add extends StableFunction  {
 		for (Iterator<FelNode> iterator = node.getChildren().iterator(); iterator
 				.hasNext();) {
 			Object child = iterator.next();
-			if (child instanceof FelNode) {
-				FelNode childNode = (FelNode) child;
-				child = childNode.eval(context);
-			}
+			child = TolerantFunction.eval(context, child);
 			if (child instanceof String) {
 				if (returnMe == null) {
 					returnMe = child;
@@ -67,6 +65,7 @@ public class Add extends StableFunction  {
 		}
 		return returnMe;
 	}
+
 
 	@Override
 	public String getName() {

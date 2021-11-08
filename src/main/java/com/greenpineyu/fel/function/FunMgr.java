@@ -1,38 +1,30 @@
 package com.greenpineyu.fel.function;
 
+import com.greenpineyu.fel.function.operator.*;
+import com.greenpineyu.fel.util.FelSwitcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.greenpineyu.fel.function.operator.Add;
-import com.greenpineyu.fel.function.operator.CollectionGet;
-import com.greenpineyu.fel.function.operator.Cond;
-import com.greenpineyu.fel.function.operator.Div;
-import com.greenpineyu.fel.function.operator.Dot;
-import com.greenpineyu.fel.function.operator.Equal;
-import com.greenpineyu.fel.function.operator.GreaterThan;
-import com.greenpineyu.fel.function.operator.GreaterThenEqual;
-import com.greenpineyu.fel.function.operator.LessThen;
-import com.greenpineyu.fel.function.operator.LessThenEqual;
-import com.greenpineyu.fel.function.operator.And;
-import com.greenpineyu.fel.function.operator.Mod;
-import com.greenpineyu.fel.function.operator.Mul;
-import com.greenpineyu.fel.function.operator.NotEqual;
-import com.greenpineyu.fel.function.operator.NotOper;
-import com.greenpineyu.fel.function.operator.Or;
-import com.greenpineyu.fel.function.operator.Sub;
-
 public class FunMgr {
 
-//	private static FunMgr instance = new FunMgr();
+	private static final Logger log = LoggerFactory.getLogger(FunMgr.class);
+
+	//	private static FunMgr instance = new FunMgr();
 
 	public FunMgr() {
-		userFunMap = new HashMap<String,Function>();
+		userFunMap = new HashMap<>();
 	}
 	
 	/**
 	 * 用户函数
 	 */
-	private Map<String, Function> userFunMap;
+	private final Map<String, Function> userFunMap;
 
 	/**
 	 * 共用函数
@@ -40,7 +32,7 @@ public class FunMgr {
 	private Map<String, Function> funcMap;
 
 	{
-		funcMap = new HashMap<String, Function>();
+		funcMap = new HashMap<>();
 
 		// // 操作符函数
 		addFun(new Dot());
@@ -91,10 +83,27 @@ public class FunMgr {
 //		funcMap.put(Like.getInstance().getName(), Like.getInstance());// like
 //		funcMap.put(In.getInstance().getName(), In.getInstance());// in
 
-		
-		
-
 	}
+
+	public void autoLoad() {
+		Enumeration<URL> res;
+		try {
+			res = this.getClass().getClassLoader().getResources("com/greenpineyu/fel/function/");
+			while (res.hasMoreElements()) {
+				URL nex = res.nextElement();
+				System.out.println(nex.getFile());
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			if (FelSwitcher.errorLog) {
+				log.error("autoLoad error", e);
+			}
+		}
+	}
+
+	//public static void main(String[] args) {
+	//	new FunMgr().autoLoad();
+	//}
 
 	private void addFun(Function fun) {
 		funcMap.put(fun.getName(), fun);

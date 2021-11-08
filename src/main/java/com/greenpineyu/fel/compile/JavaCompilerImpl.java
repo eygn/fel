@@ -18,11 +18,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * @author byg
- * @date 2021-09-09 17:38:38
+ * @author yiming
+ * @date 2018/1/29
  */
-public class CustomJavaCompilerImpl implements CustomJavaCompiler {
-    private static final Logger log = LoggerFactory.getLogger(CustomJavaCompilerImpl.class);
+public class JavaCompilerImpl implements CustomJavaCompiler {
+    private static final Logger log = LoggerFactory.getLogger(JavaCompilerImpl.class);
 
     /**
      * java源码版本
@@ -48,18 +48,18 @@ public class CustomJavaCompilerImpl implements CustomJavaCompiler {
      * 允许的java规范版本
      */
     private Set<String> allowedSpecVersion = new HashSet<>(Arrays.asList(
-            "1.5",
-            "1.6",
-            "1.7",
-            "1.8"
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8"
     ));
 
     @Override
     public byte[] compile(final File javaSourceFile, final String encode, final String targetClassName,
-                          final File outputPath) throws Exception {
+                        final File outputPath) throws Exception {
         final ClassLoader classLoader = this.getClass().getClassLoader();
-        String[] fileNames = new String[]{javaSourceFile.getAbsolutePath()}; // 要编译的源文件
-        String[] classNames = new String[]{targetClassName}; // 要编译的Class全名称
+        String[] fileNames = new String[] {javaSourceFile.getAbsolutePath()}; // 要编译的源文件
+        String[] classNames = new String[] {targetClassName}; // 要编译的Class全名称
         final List<IProblem> problemList = new ArrayList<IProblem>(); // 搜集问题
 
         final INameEnvironment env = new INameEnvironment() {
@@ -96,7 +96,7 @@ public class CustomJavaCompilerImpl implements CustomJavaCompiler {
                 try {
                     if (className.equals(targetClassName)) {
                         ICompilationUnit compilationUnit = new CompilationUnit(javaSourceFile.getAbsolutePath(),
-                                className, encode);
+                            className, encode);
                         return new NameEnvironmentAnswer(compilationUnit, null);
                     }
                     String resourceName = className.replace('.', '/') + ".class";
@@ -190,7 +190,7 @@ public class CustomJavaCompilerImpl implements CustomJavaCompiler {
         }
 
         final IProblemFactory problemFactory = new DefaultProblemFactory(Locale.getDefault());
-        AtomicReference<byte[]> $result = new AtomicReference<>();
+        AtomicReference<byte[]> $result=new AtomicReference<>();
         final ICompilerRequestor requestor = result -> {
             try {
                 if (result.hasProblems()) {
@@ -221,20 +221,20 @@ public class CustomJavaCompilerImpl implements CustomJavaCompiler {
                         String finalClassName = className;
                         //zhaodong.xzd 异步写文件
 //                        executorService.execute(()->{
-                        try {
-                            String outFile = outputPath + "/" + finalClassName.replace('.', '/') + ".class";
+                            try {
+                                String outFile = outputPath + "/" + finalClassName.replace('.', '/') + ".class";
 
-                            File packagePath = new File(outFile.substring(0, outFile.lastIndexOf("/")));
-                            if (!packagePath.exists()) {
-                                packagePath.mkdirs();
+                                File packagePath = new File(outFile.substring(0, outFile.lastIndexOf("/")));
+                                if (!packagePath.exists()) {
+                                    packagePath.mkdirs();
+                                }
+                                FileOutputStream fout = new FileOutputStream(outFile);
+                                BufferedOutputStream bos = new BufferedOutputStream(fout);
+                                bos.write(byte2);
+                                bos.close();
+                            }catch (Throwable e){
+                                log.error("写编译文件失败:",e);
                             }
-                            FileOutputStream fout = new FileOutputStream(outFile);
-                            BufferedOutputStream bos = new BufferedOutputStream(fout);
-                            bos.write(byte2);
-                            bos.close();
-                        } catch (Throwable e) {
-                            log.error("写编译文件失败:", e);
-                        }
 
 //                        });
 
@@ -254,7 +254,7 @@ public class CustomJavaCompilerImpl implements CustomJavaCompiler {
         cOptions.parseLiteralExpressionsAsConstants = true;
 
         org.eclipse.jdt.internal.compiler.Compiler compiler = new org.eclipse.jdt.internal.compiler.Compiler(env,
-                policy, cOptions, requestor, problemFactory);
+            policy, cOptions, requestor, problemFactory);
 
         compiler.compile(compilationUnits);
 
@@ -263,14 +263,13 @@ public class CustomJavaCompilerImpl implements CustomJavaCompiler {
         }
         return $result.get();
     }
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(8);
+    private ExecutorService executorService= Executors.newFixedThreadPool(8);
 
     private String getErrorMsg(File javaFile, String className, Collection<IProblem> errors) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("complie file[").append(javaFile.getAbsoluteFile()).append("] to class[").append(className)
-                .append("] failure,");
+            .append("] failure,");
 
         for (IProblem problem : errors) {
             sb.append(problem).append(System.getProperty("line.separator"));

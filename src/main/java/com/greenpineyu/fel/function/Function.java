@@ -24,7 +24,7 @@ public interface Function {
 	
 	
 	
-	SourceBuilder toMethod(FelNode node,FelContext ctx);
+	SourceBuilder toMethod(FelNode node, FelContext ctx);
 	
 	
 

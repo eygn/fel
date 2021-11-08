@@ -6,7 +6,7 @@
 
     <groupId>com.greenpineyu</groupId>
     <artifactId>fel</artifactId>
-    <version>1.1-RELEASE</version>
+    <version>1.4-RELEASE</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

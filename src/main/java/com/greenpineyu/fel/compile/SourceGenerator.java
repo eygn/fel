@@ -12,7 +12,7 @@ public interface SourceGenerator {
 	 * @return 
 	 */
 	JavaSource getSource(FelContext ctx, FelNode node);
-	
+
 	void addOpti(Optimizer opti);
 	
 	

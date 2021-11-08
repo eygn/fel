@@ -1,12 +1,5 @@
 package com.greenpineyu.fel.function.operator;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.greenpineyu.fel.Expression;
 import com.greenpineyu.fel.FelEngine;
 import com.greenpineyu.fel.FelEngineImpl;
@@ -19,6 +12,9 @@ import com.greenpineyu.fel.context.FelContext;
 import com.greenpineyu.fel.function.StableFunction;
 import com.greenpineyu.fel.function.TolerantFunction;
 import com.greenpineyu.fel.parser.FelNode;
+
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * 根据索引获取某个集合的值,相当于List.get(i)方法和array[i]方法。 用于处理array[i],list[i]等表达式，
