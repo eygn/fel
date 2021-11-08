@@ -174,4 +174,8 @@ public class StringUtils {
        return cs1 == null ? cs2 == null : cs1.equals(cs2);
    }
 
+    public static boolean equals(CharSequence cs1, Null cs2) {
+        return cs1 ==null  || cs1.equals("");
+    }
+
 }
