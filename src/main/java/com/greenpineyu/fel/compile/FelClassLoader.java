@@ -1,6 +1,6 @@
 package com.greenpineyu.fel.compile;
 
-import org.codehaus.janino.ByteArrayClassLoader;
+import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 
 import java.io.File;
 import java.net.MalformedURLException;

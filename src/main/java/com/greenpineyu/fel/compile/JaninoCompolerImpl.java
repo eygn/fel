@@ -4,11 +4,11 @@ import com.google.common.collect.Maps;
 import com.greenpineyu.fel.Expression;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
+import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
+import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
-import org.codehaus.janino.util.resource.MapResourceCreator;
-import org.codehaus.janino.util.resource.MapResourceFinder;
-import org.codehaus.janino.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class JaninoCompolerImpl implements CustomJavaCompiler {
 
     @Override
     public byte[] compile(File javaSourceFile, String encode, String targetClassName, File outputPath) throws Exception {
-        throw new UnsupportedOperationException("暂时不支持janno单个文件编译");
+        throw new UnsupportedOperationException("JaninoCompolerImpl.compile");
     }
 
     private static AtomicBoolean delete = new AtomicBoolean(false);
@@ -41,13 +41,11 @@ public class JaninoCompolerImpl implements CustomJavaCompiler {
             sourceFinder.addResource(v.getName(), v.getSource());
         });
         Map<String, Class> clazzs = Maps.newHashMap();
-        //编译资源 文件名称(全限定类名)->字节码
         Map<String, byte[]> resultMap = compile(sourceFinder);
         File dirFile = new File(dPath);
 
         synchronized (lock) {
             try {
-                // 只有第一次启动的时候会删除一次已有文件
                 if (delete.compareAndSet(false, true)) {
                     FileUtils.deleteDirectory(dirFile);
                     delete.set(true);
@@ -66,7 +64,6 @@ public class JaninoCompolerImpl implements CustomJavaCompiler {
                     }
                 }
             }
-            //生成字节码classloader
             log.warn("comile result map is {}", resultMap);
             for (Map.Entry<String, byte[]> entry : resultMap.entrySet()) {
                 try {
@@ -85,12 +82,11 @@ public class JaninoCompolerImpl implements CustomJavaCompiler {
                     clazzs.put(objectName, (Class) FelClassLoader.getInstance().defineClassSelf(objectName, classData, 0,
                             classData.length));
                 } catch (Throwable e) {
-                    log.error("写编译文件失败:", e);
+                    log.error("mutilCompiler exception:", e);
                 }
             }
-            log.warn("filename ->class {} ，sizeis {}", clazzs, clazzs.size());
+            log.warn("filename ->class {} sizeis {}", clazzs, clazzs.size());
             for (Map.Entry<String, Class> clazz0 : clazzs.entrySet()) {
-                //对文件映射遍历，得到表达式和expri的对应关系
                 String fileName = clazz0.getKey();
                 String expr = fileName2Biz.get(fileName);
                 $r.put(expr, (Expression) (clazz0.getValue()).newInstance());
