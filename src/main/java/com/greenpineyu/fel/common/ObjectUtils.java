@@ -1,6 +1,8 @@
 package com.greenpineyu.fel.common;
 
 
+import java.util.Objects;
+
 public class ObjectUtils {
 	 /**
      * <p>Compares two objects for equality, where either one or both
@@ -28,6 +30,11 @@ public class ObjectUtils {
         if ((object1 == null) || (object2 == null)) {
             return false;
         }
+
+        if (Objects.toString(object1).equals(Objects.toString(object2))) {
+            return true;
+        }
+
         return object1.equals(object2);
     }
     
