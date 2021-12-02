@@ -129,10 +129,10 @@ public class CompileService {
             //felnode biz-node  entry.getkey->bizcode
             //expr biz-exp
             JavaSource src = srcGen.getSource(entry.getValue(), felnode.get(entry.getKey()));
-            System.err.println(src.getSource());
+//            System.err.println(src.getSource());
             if (src instanceof ConstExpSrc) {
-                ConstExpSrc s = (ConstExpSrc) src;
-                $res.put(origin.get(entry.getKey()), s.getValue());
+                /*ConstExpSrc s = (ConstExpSrc) src;
+                $res.put(origin.get(entry.getKey()), s.getValue());*/
                 continue;
             }
             src.setSource("// expr powered by traderule:" + origin.get(entry.getKey()) + "\n" + src.getSource());
